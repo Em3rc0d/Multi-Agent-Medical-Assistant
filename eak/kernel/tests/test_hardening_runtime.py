@@ -6,6 +6,7 @@ from eak_kernel.approval import ApprovalDecision, ApprovalRequest
 from eak_kernel.approval_store import SQLiteApprovalStore
 from eak_kernel.evidence import EvidenceEdge, EvidenceGraph, EvidenceNode
 from eak_kernel.evidence_store import SQLiteEvidenceStore
+from eak_kernel.execution_store import SQLiteExecutionStore
 from eak_kernel.secure_artifacts import EncryptedLocalArtifactStore
 from eak_kernel.security import AuthorizationRule, EnvironmentSecretResolver, Principal, RBACAuthorizer, SecretRef
 from eak_kernel.work_queue import SQLiteWorkQueue
@@ -31,7 +32,7 @@ def test_encrypted_store_is_tenant_isolated_and_ciphertext_at_rest(tmp_path):
     saved = store.put(
         tenant="tenant-a",
         data=b"secret medical bytes",
-        media_type="application/octet-stream",
+        media_type="image/png",
     )
     assert store.get(tenant="tenant-a", ref=saved.ref) == b"secret medical bytes"
     encrypted = next((tmp_path / "tenant-a").iterdir()).read_bytes()
@@ -61,6 +62,16 @@ def test_evidence_graph_round_trip(tmp_path):
     loaded = store.load(execution_id="exec1", graph_id="g1")
     assert loaded.nodes == graph.nodes
     assert loaded.edges == graph.edges
+
+
+def test_execution_context_store_is_immutable(tmp_path):
+    store = SQLiteExecutionStore(tmp_path / "execution.sqlite")
+    context = {"spec": {"executionId": "execution://1", "tenant": "a"}}
+    digest = store.save(context)
+    assert store.load("execution://1") == context
+    assert store.save(context) == digest
+    with pytest.raises(ValueError):
+        store.save({"spec": {"executionId": "execution://1", "tenant": "b"}})
 
 
 def test_work_queue_lease_retry_and_idempotency(tmp_path):

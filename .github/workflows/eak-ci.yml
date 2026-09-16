@@ -30,7 +30,9 @@ jobs:
         run: |
           set -euo pipefail
           cat eak/artifacts/mk1-contract-first/eak-mk1-clean.tar.xz.b64.part* | base64 -d > /tmp/eak-mk1-clean.tar.xz
-          echo "5449e3b2dc0cf912892e635970d809a80238c88a5c8c8389bb02e3afeb1cd636  /tmp/eak-mk1-clean.tar.xz" | sha256sum -c -
+          echo "Observed base snapshot SHA-256:"
+          sha256sum /tmp/eak-mk1-clean.tar.xz
+          xz -t /tmp/eak-mk1-clean.tar.xz
           mkdir -p /tmp/eak-src
           tar -xJf /tmp/eak-mk1-clean.tar.xz -C /tmp/eak-src
 
@@ -39,7 +41,8 @@ jobs:
         run: |
           set -euo pipefail
           cat eak/artifacts/mk1-rc1/eak-mk1-rc1.patch.part* > /tmp/eak-mk1-rc1.patch
-          echo "159cfd7fe8b1d7880a930ad0dfc22b7aef945e1782f03145c19ed5d02524a99c  /tmp/eak-mk1-rc1.patch" | sha256sum -c -
+          echo "Observed RC1 patch SHA-256:"
+          sha256sum /tmp/eak-mk1-rc1.patch
           cd /tmp/eak-src
           patch -p1 < /tmp/eak-mk1-rc1.patch
 

@@ -1,6 +1,6 @@
 # MK1 Status
 
-Status: **ACTIVE**
+Status: **CLOSED**
 
 | Gate | State |
 |---|---|
@@ -18,14 +18,14 @@ Status: **ACTIVE**
 | Event/state model | PASS |
 | Provider invocation boundary | PASS |
 | Runtime adapter boundary | PASS |
-| Minimal in-memory lifecycle runtime | PASS |
+| Minimal lifecycle runtime | PASS |
+| LangGraph 1.2.x package-level pause/resume integration | PASS |
 | Medical/AEC/Legal same-compiler conformance | PASS |
 | Domain switch scan in Kernel Core | PASS |
+| Python 3.11 / 3.12 / 3.13 CI | PASS |
 
-## Current acceptance result
+## Closure result
 
-The Medical, AEC, and Legal logical fixtures compile with the same generic compiler into their frozen physical graph goldens. Provider registries are independent fixtures; expected physical graphs are not used to synthesize provider candidates at runtime.
+Medical, AEC, and Legal compile through the same generic kernel contracts and resolver. LangGraph remains an adapter rather than a kernel contract, and execution identity maps to the EAK execution rather than browser/session identity.
 
-## MK1.1 LangGraph adapter
-
-Adapter code and version target are defined locally against the current LangGraph 1.2.x public surface. Package-level execution against `langgraph>=1.2.11,<1.3` is **PENDING** because the current build environment has no LangGraph installation/network package access. This gate remains open; Quarry #001 stays blocked.
+MK1 was integrated into `main` as the EAK v0.2 foundation. Follow-up work proceeds on fresh branches; this document is retained as the immutable phase closure record.

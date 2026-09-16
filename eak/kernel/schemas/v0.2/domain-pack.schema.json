@@ -1,0 +1,7 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eak.dev/schema/v0.2/domain-pack.schema.json",
+  "title":"EAK DomainPack Contract v0.2","type":"object","additionalProperties":false,
+  "required":["apiVersion","kind","metadata","spec"],
+  "properties":{"apiVersion":{"const":"eak/v0.2"},"kind":{"const":"DomainPack"},"metadata":{"$ref":"https://eak.dev/schema/v0.2/common.schema.json#/$defs/Metadata"},"spec":{"type":"object","additionalProperties":false,"required":["registrations","providerRequirements"],"properties":{"extends":{"type":"array","items":{"$ref":"https://eak.dev/schema/v0.2/common.schema.json#/$defs/Ref"}},"registrations":{"type":"object","additionalProperties":{"type":"array"}},"providerRequirements":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["capability","certificationProfile"],"properties":{"capability":{"$ref":"https://eak.dev/schema/v0.2/common.schema.json#/$defs/Ref"},"certificationProfile":{"type":"string","minLength":1}}}},"compatibility":{"type":"object","additionalProperties":true}}}}
+}

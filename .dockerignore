@@ -1,0 +1,26 @@
+.git
+.github
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# EAK incubation sources are not part of the legacy medical application image.
+eak/
+
+# Runtime/generated data must not be baked into images.
+uploads/
+data/qdrant_db/
+data/parsed_docs/
+
+# Large research/demo assets are not required at runtime.
+assets/*.mp4
+sample_images/
+
+# Local tooling / editor state.
+.vscode/
+.idea/
+.DS_Store
+*.log

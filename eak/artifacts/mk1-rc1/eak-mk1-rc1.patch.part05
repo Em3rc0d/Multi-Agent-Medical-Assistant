@@ -1,0 +1,81 @@
+ans: list[InMemorySpan] = field(default_factory=list)
++
++    @contextmanager
++    def span(self, name: str, *, attributes: dict[str, Any] | None = None):
++        span = InMemorySpan(name, dict(attributes or {}))
++        self.spans.append(span)
++        yield span
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_approval.py b/tests/test_approval.py
+--- a/tests/test_approval.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_approval.py	2026-09-16 19:19:55.429404518 +0000
+@@ -0,0 +1,12 @@
++import pytest
++
++from eak_kernel.approval import ApprovalDecision, ApprovalError, ApprovalRequest, ApprovalVerifier
++
++
++def test_approval_requires_authenticated_role():
++    req = ApprovalRequest("a1", "execution://1", "review", "review-v1", required_role="engineer")
++    bad = ApprovalDecision("a1", "principal://p1", "APPROVE", authenticated_roles=("viewer",))
++    with pytest.raises(ApprovalError):
++        ApprovalVerifier().verify(req, bad)
++    good = ApprovalDecision("a1", "principal://p1", "APPROVE", authenticated_roles=("engineer",))
++    ApprovalVerifier().verify(req, good)
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_artifact_store.py b/tests/test_artifact_store.py
+--- a/tests/test_artifact_store.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_artifact_store.py	2026-09-16 19:19:55.429351070 +0000
+@@ -0,0 +1,17 @@
++import pytest
++
++from eak_kernel.artifacts import ArtifactAccessError, InMemoryArtifactStore
++
++
++def test_artifact_store_is_tenant_bound_and_integrity_checked():
++    store = InMemoryArtifactStore()
++    stored = store.put(content=b"abc", media_type="text/plain", tenant="t1", artifact_type="document.text")
++    assert store.get(stored.ref, tenant="t1") == b"abc"
++    with pytest.raises(ArtifactAccessError):
++        store.get(stored.ref, tenant="t2")
++
++
++def test_artifact_contract_has_content_digest():
++    store = InMemoryArtifactStore()
++    stored = store.put(content=b"abc", media_type="text/plain", tenant="t1", artifact_type="document.text")
++    assert len(stored.document["spec"]["integrity"]["digest"]) == 64
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_domain_loader.py b/tests/test_domain_loader.py
+--- a/tests/test_domain_loader.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_domain_loader.py	2026-09-16 19:20:05.242507039 +0000
+@@ -0,0 +1,16 @@
++import json
++from pathlib import Path
++
++from eak_kernel.domain import DomainPackLoader
++from eak_kernel.model import Ref
++from eak_kernel.schema import SchemaSet
++
++ROOT = Path(__file__).parents[1]
++
++
++def test_domain_pack_is_loaded_declaratively():
++    schemas = SchemaSet(ROOT / "schemas" / "v0.2")
++    doc = json.loads((ROOT / "conformance/fixtures/paper/medical.domain-pack.json").read_text())
++    available = {Ref.from_dict(dep): {} for dep in doc["spec"].get("dependencies", [])}
++    loaded = DomainPackLoader(schemas, available=available).load(doc)
++    assert loaded.ref.id == doc["metadata"]["id"]
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_evaluation.py b/tests/test_evaluation.py
+--- a/tests/test_evaluation.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_evaluation.py	2026-09-16 19:19:55.429459269 +0000
+@@ -0,0 +1,16 @@
++from eak_kernel.evaluation import CertificationGate, EvaluationEngine
++
++
++def test_evaluation_thresholds_and_certification_gate():
++    profile = {"spec": {"metrics": [
++        {"name": "groundedness", "minimum": 0.9},
++        {"name": "unsupported_rate", "maximum": 0.02},
++    ]}}
++    result = EvaluationEngine().evaluate(profile, {"groundedness": 0.95, "unsupported_rate": 0.01})
++    assert result.passed is True
++    assert CertificationGate().decide(
++        evaluation_passed=True,
++        security_review_passed=Tr

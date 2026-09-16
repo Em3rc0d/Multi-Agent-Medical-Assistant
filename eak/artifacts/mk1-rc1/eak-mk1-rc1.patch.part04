@@ -1,0 +1,99 @@
+s: list[dict[str, Any]] = field(default_factory=list)
++    relations: list[dict[str, Any]] = field(default_factory=list)
++
++    def add_claim(self, claim: dict[str, Any]) -> None:
++        self.claims.append(claim)
++
++    def add_evidence(self, evidence: dict[str, Any]) -> None:
++        self.evidence.append(evidence)
++
++    def add_assessment(self, assessment: dict[str, Any]) -> None:
++        self.assessments.append(assessment)
++
++    def relate(self, *, source: str, relation: str, target: str) -> None:
++        self.relations.append({"source": source, "relation": relation, "target": target})
++
++    def build(self) -> dict[str, Any]:
++        ids = {
++            *(str(x["id"]) for x in self.claims),
++            *(str(x["id"]) for x in self.evidence),
++            *(str(x["id"]) for x in self.assessments),
++        }
++        for relation in self.relations:
++            if relation["source"] not in ids or relation["target"] not in ids:
++                raise EvidenceGraphError("relation-references-unknown-node")
++        return {
++            "apiVersion": "eak/v0.2",
++            "kind": "EvidenceGraph",
++            "metadata": {"id": self.graph_id, "version": "1.0.0"},
++            "spec": {
++                "claims": list(self.claims),
++                "evidence": list(self.evidence),
++                "assessments": list(self.assessments),
++                "relations": list(self.relations),
++            },
++        }
++
++    def to_prov_json(self) -> dict[str, Any]:
++        """Produce a compact PROV-compatible JSON projection.
++
++        This intentionally avoids making W3C PROV a kernel dependency. It maps
++        claims/evidence to entities and records EAK relations as derivations.
++        """
++        graph = self.build()
++        entities: dict[str, Any] = {}
++        for item in graph["spec"]["claims"]:
++            entities[item["id"]] = {"prov:type": "eak:Claim"}
++        for item in graph["spec"]["evidence"]:
++            entities[item["id"]] = {"prov:type": "eak:Evidence"}
++        for item in graph["spec"]["assessments"]:
++            entities[item["id"]] = {"prov:type": "eak:Assessment"}
++        derivations = {}
++        for index, relation in enumerate(graph["spec"]["relations"]):
++            derivations[f"derivation-{index}"] = {
++                "prov:generatedEntity": relation["source"],
++                "prov:usedEntity": relation["target"],
++                "eak:relation": relation["relation"],
++            }
++        return {
++            "prefix": {"prov": "http://www.w3.org/ns/prov#", "eak": "https://eak.dev/ns#"},
++            "entity": entities,
++            "wasDerivedFrom": derivations,
++        }
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/src/eak_kernel/observability.py b/src/eak_kernel/observability.py
+--- a/src/eak_kernel/observability.py	1970-01-01 00:00:00.000000000 +0000
++++ b/src/eak_kernel/observability.py	2026-09-16 19:19:55.429315257 +0000
+@@ -0,0 +1,39 @@
++from __future__ import annotations
++
++from contextlib import contextmanager
++from dataclasses import dataclass, field
++from typing import Any, Iterator, Protocol
++
++
++class Span(Protocol):
++    def set_attribute(self, key: str, value: Any) -> None: ...
++    def add_event(self, name: str, attributes: dict[str, Any] | None = None) -> None: ...
++
++
++class Tracer(Protocol):
++    @contextmanager
++    def span(self, name: str, *, attributes: dict[str, Any] | None = None) -> Iterator[Span]: ...
++
++
++@dataclass
++class InMemorySpan:
++    name: str
++    attributes: dict[str, Any] = field(default_factory=dict)
++    events: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
++
++    def set_attribute(self, key: str, value: Any) -> None:
++        self.attributes[key] = value
++
++    def add_event(self, name: str, attributes: dict[str, Any] | None = None) -> None:
++        self.events.append((name, dict(attributes or {})))
++
++
++@dataclass
++class InMemoryTracer:
++    sp

@@ -1,0 +1,94 @@
+ue,
++        human_review_passed=True,
++        required_artifact_digests_present=True,
++    ) == "CERTIFIED"
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_evidence.py b/tests/test_evidence.py
+--- a/tests/test_evidence.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_evidence.py	2026-09-16 19:19:55.429378190 +0000
+@@ -0,0 +1,22 @@
++import pytest
++
++from eak_kernel.evidence import EvidenceGraphBuilder, EvidenceGraphError
++
++
++def test_evidence_graph_and_prov_projection():
++    b = EvidenceGraphBuilder("g1")
++    b.add_claim({"id": "c1"})
++    b.add_evidence({"id": "e1"})
++    b.relate(source="c1", relation="supportedBy", target="e1")
++    graph = b.build()
++    assert graph["spec"]["relations"][0]["target"] == "e1"
++    prov = b.to_prov_json()
++    assert prov["entity"]["c1"]["prov:type"] == "eak:Claim"
++
++
++def test_evidence_graph_rejects_dangling_relations():
++    b = EvidenceGraphBuilder("g1")
++    b.add_claim({"id": "c1"})
++    b.relate(source="c1", relation="supportedBy", target="missing")
++    with pytest.raises(EvidenceGraphError):
++        b.build()
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_langgraph_integration.py b/tests/test_langgraph_integration.py
+--- a/tests/test_langgraph_integration.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_langgraph_integration.py	2026-09-16 19:19:55.429510615 +0000
+@@ -0,0 +1,52 @@
++import pytest
++
++langgraph = pytest.importorskip("langgraph")
++
++from langgraph.checkpoint.memory import InMemorySaver
++
++from eak_kernel.adapters.langgraph import LangGraphRuntimeAdapter, ResumeSignal
++
++
++def _graph():
++    return {
++        "spec": {
++            "entrypoints": ["work"],
++            "nodes": [
++                {"id": "work", "kind": "capability", "provider": {"id": "p", "version": "1"}},
++                {"id": "review", "kind": "approval", "approvalProfile": "review-v1"},
++                {"id": "done", "kind": "capability", "provider": {"id": "p", "version": "1"}},
++            ],
++            "edges": [
++                {"from": "work", "to": "review", "on": "success"},
++                {"from": "review", "to": "done", "on": "success"},
++            ],
++        }
++    }
++
++
++def test_langgraph_pause_resume_preserves_execution_identity():
++    calls = []
++    def execute(node, state):
++        calls.append(node["id"])
++        return {node["id"]: True}
++
++    adapter = LangGraphRuntimeAdapter(checkpointer=InMemorySaver(), node_executor=execute)
++    ctx = {"spec": {"executionId": "execution://lg-1"}}
++    prepared = adapter.prepare(_graph(), ctx)
++    first = adapter.start(prepared, execution_id="execution://lg-1", state={})
++    assert calls == ["work"]
++    signal = ResumeSignal("appr-1", "APPROVE", "principal://reviewer", {})
++    final = adapter.resume(prepared, execution_id="execution://lg-1", signal=signal)
++    assert calls == ["work", "done"]
++    assert final["lastApproval"]["decision"] == "APPROVE"
++
++
++def test_langgraph_threads_are_isolated():
++    adapter = LangGraphRuntimeAdapter(checkpointer=InMemorySaver(), node_executor=lambda node, state: {node["id"]: True})
++    ctx1 = {"spec": {"executionId": "execution://one"}}
++    ctx2 = {"spec": {"executionId": "execution://two"}}
++    p1 = adapter.prepare(_graph(), ctx1)
++    p2 = adapter.prepare(_graph(), ctx2)
++    adapter.start(p1, execution_id="execution://one", state={})
++    adapter.start(p2, execution_id="execution://two", state={})
++    assert True
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/tests/test_observability.py b/tests/test_observability.py
+--- a/tests/test_observability.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_observability.py	2026-09-16 19:19:55.429484887 +0000
+@@ -0,0 +1,9 @@
++from eak_kernel.observability import InMemoryTracer
++
++
++def test_tracer_records_metadata

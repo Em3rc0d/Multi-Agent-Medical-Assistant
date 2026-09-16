@@ -1,0 +1,97 @@
+ault",
++            access_policy: str = "tenant-only") -> StoredArtifact:
++        digest = sha256(content).hexdigest()
++        ref = f"artifact://{tenant}/sha256:{digest}"
++        doc = {
++            "apiVersion": "eak/v0.2",
++            "kind": "Artifact",
++            "metadata": {"id": f"{tenant}-{digest[:16]}", "version": "1.0.0"},
++            "spec": {
++                "mediaType": media_type,
++                "artifactType": artifact_type,
++                "integrity": {"algorithm": "sha256", "digest": digest},
++                "storage": {"ref": ref, "contentAddressed": True, "encrypted": False},
++                "classification": {"level": classification, "categories": []},
++                "ownership": {"tenant": tenant},
++                "provenance": {
++                    **({"generatedBy": generated_by} if generated_by else {}),
++                    "derivedFrom": list(derived_from),
++                },
++                "retention": {"policyRef": retention_policy},
++                "access": {"policyRef": access_policy},
++            },
++        }
++        self._content[ref] = bytes(content)
++        self._docs[ref] = doc
++        return StoredArtifact(ref=ref, document=doc)
++
++    def _authorize(self, ref: str, tenant: str) -> dict[str, Any]:
++        try:
++            doc = self._docs[ref]
++        except KeyError as exc:
++            raise ArtifactAccessError("artifact-not-found") from exc
++        if doc["spec"]["ownership"]["tenant"] != tenant:
++            raise ArtifactAccessError("cross-tenant-artifact-access-denied")
++        return doc
++
++    def get(self, ref: str, *, tenant: str) -> bytes:
++        self._authorize(ref, tenant)
++        content = self._content[ref]
++        expected = self._docs[ref]["spec"]["integrity"]["digest"]
++        if sha256(content).hexdigest() != expected:
++            raise ArtifactAccessError("artifact-integrity-failure")
++        return bytes(content)
++
++    def metadata(self, ref: str, *, tenant: str) -> dict[str, Any]:
++        return self._authorize(ref, tenant)
++
++
++def provider_egress_allowed(*, artifact: dict[str, Any], provider: dict[str, Any],
++                            policy_allows: bool) -> bool:
++    """Fail closed for provider data egress.
++
++    `none` never requires network egress; `policy-controlled` requires an allow
++    decision; `required` also requires an explicit allow decision. Restricted
++    artifacts never infer permission from provider capability alone.
++    """
++
++    mode = provider["spec"]["dataHandling"]["egress"]
++    if mode == "none":
++        return True
++    return bool(policy_allows)
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/src/eak_kernel/cancellation.py b/src/eak_kernel/cancellation.py
+--- a/src/eak_kernel/cancellation.py	1970-01-01 00:00:00.000000000 +0000
++++ b/src/eak_kernel/cancellation.py	2026-09-16 19:19:55.429285333 +0000
+@@ -0,0 +1,17 @@
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++
++
++@dataclass
++class CancellationRegistry:
++    _cancelled: dict[str, str | None] = field(default_factory=dict)
++
++    def cancel(self, execution_id: str, reason: str | None = None) -> None:
++        self._cancelled[execution_id] = reason
++
++    def is_cancelled(self, execution_id: str) -> bool:
++        return execution_id in self._cancelled
++
++    def reason(self, execution_id: str) -> str | None:
++        return self._cancelled.get(execution_id)
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/src/eak_kernel/domain.py b/src/eak_kernel/domain.py
+--- a/src/eak_kernel/domain.py	1970-01-01 00:00:00.000000000 +0000
++++ b/src/eak_kernel/domain.py	2026-09-16 19:19:55.429132448 +0000
+@@ -0,0 +1,39 @@
++from __future__ import annotations
++
++from dataclasses import dataclass
++from typing import Any
++
++from .model import Ref
++from .schema import SchemaSet
++
++
++@dataclass(frozen=True)
++cl

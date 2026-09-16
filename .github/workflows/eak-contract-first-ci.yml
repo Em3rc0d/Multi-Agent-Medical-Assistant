@@ -1,0 +1,71 @@
+name: EAK Contract-First CI
+
+on:
+  push:
+    branches:
+      - 'eak/**'
+    paths:
+      - 'eak/**'
+      - '.github/workflows/eak-contract-first-ci.yml'
+  pull_request:
+    paths:
+      - 'eak/**'
+      - '.github/workflows/eak-contract-first-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: eak/kernel/pyproject.toml
+
+      - name: Install contract-first kernel
+        run: python -m pip install -e './eak/kernel[test,langgraph]'
+
+      - name: Validate Python sources
+        run: python -m compileall -q eak/kernel/src
+
+      - name: Validate all JSON Schemas against Draft 2020-12 meta-schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          paths = sorted(Path('eak/kernel/schemas/v0.2').glob('*.schema.json'))
+          assert paths, 'No EAK v0.2 schemas found'
+          for path in paths:
+              Draft202012Validator.check_schema(json.loads(path.read_text(encoding='utf-8')))
+              print(f'PASS {path}')
+          PY
+
+      - name: Run kernel and cross-domain conformance tests
+        run: python -m pytest eak/kernel/tests -ra
+
+      - name: Run cross-domain compiler conformance CLI
+        run: eak-conformance --root eak/kernel
+
+      - name: Verify domain logic did not leak into kernel core
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE "if[[:space:]]+.*domain.*(medical|legal|aec)|elif[[:space:]]+.*domain.*(medical|legal|aec)" eak/kernel/src/eak_kernel; then
+            echo 'Domain-specific branching leaked into EAK Kernel Core.' >&2
+            exit 1
+          fi
+          echo 'Domain-switch scan: PASS'

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eak.dev/schema/v0.2/common.schema.json",
+  "title": "EAK Core Common Definitions v0.2",
+  "type": "object",
+  "$defs": {
+    "SemVer": {"type":"string","pattern":"^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "Identifier": {"type":"string","minLength":1,"maxLength":200,"pattern":"^[A-Za-z0-9][A-Za-z0-9._:/-]*$"},
+    "Ref": {"type":"object","additionalProperties":false,"required":["id","version"],"properties":{"id":{"$ref":"#/$defs/Identifier"},"version":{"type":"string","minLength":1},"digest":{"type":"string","pattern":"^(sha256|sha512):[0-9a-fA-F]{32,}$"}}},
+    "Metadata": {"type":"object","additionalProperties":false,"required":["id","version"],"properties":{"id":{"$ref":"#/$defs/Identifier"},"version":{"$ref":"#/$defs/SemVer"},"displayName":{"type":"string","minLength":1,"maxLength":200},"description":{"type":"string","maxLength":4000},"labels":{"type":"object","additionalProperties":{"type":"string","maxLength":200}},"annotations":{"type":"object","additionalProperties":{"type":"string","maxLength":2000}}}},
+    "ArtifactRef":{"type":"string","pattern":"^artifact://[A-Za-z0-9._:/-]+$"},
+    "ExecutionRef":{"type":"string","pattern":"^execution://[A-Za-z0-9._:/-]+$"},
+    "PrincipalRef":{"type":"string","pattern":"^principal://[A-Za-z0-9._:/-]+$"},
+    "ProviderRef":{"type":"string","pattern":"^provider://[A-Za-z0-9._:/@-]+$"},
+    "ClaimRef":{"type":"string","pattern":"^claim://[A-Za-z0-9._:/-]+$"},
+    "EvidenceRef":{"type":"string","pattern":"^evidence://[A-Za-z0-9._:/-]+$"},
+    "PolicyRef":{"type":"string","pattern":"^policy://[A-Za-z0-9._:/@-]+$"},
+    "Principal":{"type":"object","additionalProperties":false,"required":["id","type"],"properties":{"id":{"$ref":"#/$defs/PrincipalRef"},"type":{"enum":["human","service","organization","agent"]},"roles":{"type":"array","items":{"type":"string"},"uniqueItems":true},"authenticated":{"type":"boolean"},"delegatedBy":{"$ref":"#/$defs/PrincipalRef"}}},
+    "DataClassification":{"type":"object","additionalProperties":false,"required":["level"],"properties":{"level":{"enum":["public","internal","confidential","restricted"]},"categories":{"type":"array","items":{"type":"string"},"uniqueItems":true},"jurisdictions":{"type":"array","items":{"type":"string"},"uniqueItems":true}}},
+    "Trace":{"type":"object","additionalProperties":false,"properties":{"traceId":{"type":"string","minLength":1},"spanId":{"type":"string","minLength":1},"contentCapture":{"enum":["off","redacted","explicit-opt-in"]}}},
+    "Score":{"type":"object","additionalProperties":false,"required":["metric","value","producer"],"properties":{"metric":{"type":"string","minLength":1},"value":{"type":"number"},"producer":{"type":"string","minLength":1},"scale":{"type":"string"},"calibrated":{"type":"boolean"},"calibrationProfile":{"type":"string"}}},
+    "RetryPolicy":{"type":"object","additionalProperties":false,"required":["maxAttempts"],"properties":{"maxAttempts":{"type":"integer","minimum":1,"maximum":20},"strategy":{"enum":["none","fixed","exponential"]},"baseDelayMs":{"type":"integer","minimum":0},"retryOn":{"type":"array","items":{"type":"string"},"uniqueItems":true}}}
+  }
+}

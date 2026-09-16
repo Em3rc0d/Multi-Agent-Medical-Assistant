@@ -1,0 +1,11 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eak.dev/schema/v0.2/evaluation-certification.schema.json",
+  "title":"EAK Evaluation and Certification Contracts v0.2",
+  "$defs":{"Base":{"type":"object","additionalProperties":false,"required":["apiVersion","kind","metadata","spec"],"properties":{"apiVersion":{"const":"eak/v0.2"},"metadata":{"$ref":"https://eak.dev/schema/v0.2/common.schema.json#/$defs/Metadata"},"spec":{"type":"object","additionalProperties":true}}}},
+  "oneOf":[
+    {"allOf":[{"$ref":"#/$defs/Base"},{"properties":{"kind":{"const":"EvaluationProfile"}},"required":["kind"]}]},
+    {"allOf":[{"$ref":"#/$defs/Base"},{"properties":{"kind":{"const":"EvaluationRun"}},"required":["kind"]}]},
+    {"allOf":[{"$ref":"#/$defs/Base"},{"properties":{"kind":{"const":"CertificationRecord"}},"required":["kind"]}]}
+  ]
+}

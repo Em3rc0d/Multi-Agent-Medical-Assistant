@@ -1,51 +1,32 @@
-# Expert Agent Kernel (EAK) — MK1 Incubation
+# Expert Agent Kernel (EAK)
 
-Status: **MK1 ACTIVE / contract-first**
+Status: **MK1 CLOSED / MK2–MK3 ACTIVE**
 
-This directory is the executable continuation of EAK MK0 Core Spec v0.2. It deliberately starts with conformance rather than domain features or an agent runtime.
+EAK is a domain-agnostic execution and trust kernel for building verifiable expert systems from versioned capabilities, providers, artifacts, workflows, evidence, policy and evaluations. Domain semantics stay outside Kernel Core.
 
-## Current scope
+## Current baseline
 
-Implemented in this incubation slice:
+The same compiler and resolver support Medical, AEC and Legal conformance fixtures without `if domain == ...` in the core. LangGraph is a runtime adapter, not an EAK contract. Quarry #001 has already yielded generic provider boundaries plus a Medical Domain Pack adapter layer.
 
-- frozen EAK v0.2 schemas and normative specs;
-- Draft 2020-12 schema validation;
-- semantic ExecutionGraph validation;
-- versioned registries;
-- deterministic Capability → Provider resolution;
-- policy adapter boundary;
-- certification-aware fail-closed resolution;
-- physical graph compilation;
-- ExecutionContext snapshot compilation;
-- canonical execution state machine;
-- minimal in-memory runtime for lifecycle semantics only;
-- cross-domain conformance against Medical, AEC, and Legal paper fixtures.
+Trust/runtime reference implementations now include tenant-scoped content-addressed artifacts, SQLite event persistence with tamper-evident hash chains, authenticated approval persistence, evidence graph persistence, metadata-only telemetry, opaque secret references and explicit deployment-readiness profiles.
 
-Not implemented yet:
-
-- LangGraph adapter;
-- MCP/A2A invocation adapters;
-- real persistence/event store;
-- real artifact store;
-- production policy engine;
-- real providers;
-- medical Quarry #001 port.
-
-Those remain blocked until the generic conformance layer is green.
+These local adapters are engineering references, **not a production certification**. The production readiness profile intentionally rejects SQLite/filesystem/native-local adapters until production-tier implementations are supplied.
 
 ## Run
 
 ```bash
-python -m pip install -e '.[test]'
+python -m pip install -e '.[test,langgraph]'
 pytest
 
 eak-conformance --root .
 ```
 
-The acceptance condition is that the same compiler produces the three expected physical ExecutionGraphs without any domain switch in kernel code.
-
-## Core invariant
+## Core invariants
 
 ```text
 A new Domain Pack MUST NOT require a Kernel Core change.
+Capability describes WHAT; Provider describes HOW.
+Claims and Evidence are distinct.
+Policies and deployment gates fail closed.
+Runtime/framework state never becomes an EAK contract.
 ```

@@ -6,6 +6,8 @@ from .model import PolicyDecision, Ref
 
 
 class PolicyAdapter(Protocol):
+    deployment_tier: str
+
     def decide_provider_use(
         self,
         *,
@@ -17,7 +19,9 @@ class PolicyAdapter(Protocol):
 
 
 class StaticPolicyAdapter:
-    """Deterministic policy adapter for conformance and local tests."""
+    """Deterministic test adapter for conformance fixtures only."""
+
+    deployment_tier = "test"
 
     def __init__(self, denied: set[Ref] | None = None, preferences: dict[Ref, int] | None = None):
         self.denied = denied or set()

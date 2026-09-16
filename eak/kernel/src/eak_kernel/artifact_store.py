@@ -16,11 +16,15 @@ class StoredArtifact:
 
 
 class ArtifactStore(Protocol):
+    deployment_tier: str
+
     def put(self, *, tenant: str, data: bytes, media_type: str) -> StoredArtifact: ...
     def get(self, *, tenant: str, ref: str) -> bytes: ...
 
 
 class InMemoryArtifactStore:
+    deployment_tier = "test"
+
     def __init__(self) -> None:
         self._objects: dict[tuple[str, str], bytes] = {}
 
@@ -34,12 +38,13 @@ class InMemoryArtifactStore:
         try:
             return self._objects[(tenant, ref)]
         except KeyError as exc:
-            # Deliberately indistinguishable from an unknown ref in another tenant.
             raise KeyError("Artifact not found") from exc
 
 
 class LocalArtifactStore:
-    """Content-addressed local backend for development, never raw static serving."""
+    """Content-addressed local backend for engineering, never raw static serving."""
+
+    deployment_tier = "local-durable"
 
     def __init__(self, root: str | Path) -> None:
         self.root = Path(root).resolve()

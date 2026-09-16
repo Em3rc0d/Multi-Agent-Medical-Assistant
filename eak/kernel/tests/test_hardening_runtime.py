@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from eak_kernel.artifact_store import InMemoryArtifactStore, LocalArtifactStore
 from eak_kernel.crypto import AESGCMCipher, EncryptedArtifactStore
 from eak_kernel.persistence import SQLiteEventStore
 from eak_kernel.model import Event
+from eak_kernel.readiness import DeploymentEvidence, ProductionReadinessGate
 from eak_kernel.recovery import SnapshotManifest, build_manifest, verify_manifest
 from eak_kernel.secrets import CompositeSecretProvider, EnvironmentSecretProvider
 from eak_kernel.security import Principal, RBACAuthorizer, RoleGrant
@@ -118,3 +117,40 @@ def test_event_store_backup_and_recovery_manifest(tmp_path):
     assert verify_manifest(tmp_path, decoded) == ()
     backup.write_bytes(b"tampered")
     assert verify_manifest(tmp_path, decoded)
+
+
+def test_production_readiness_rejects_reference_backends_and_missing_evidence():
+    result = ProductionReadinessGate().evaluate(
+        DeploymentEvidence(
+            environment="production",
+            event_store="sqlite",
+            work_queue="sqlite",
+            artifact_store="local",
+            secret_provider="environment",
+            telemetry="in-memory",
+            artifact_encryption=False,
+        )
+    )
+    assert not result.ready
+    assert "reference-backend:event_store" in result.failures
+    assert "artifact-encryption-required" in result.failures
+    assert "backup-restore-unverified" in result.failures
+
+
+def test_production_readiness_accepts_managed_adapters_with_verified_operations():
+    result = ProductionReadinessGate().evaluate(
+        DeploymentEvidence(
+            environment="production",
+            event_store="postgres-managed",
+            work_queue="managed-broker",
+            artifact_store="object-store-kms",
+            secret_provider="vault-managed",
+            telemetry="opentelemetry-exporter",
+            artifact_encryption=True,
+            dependency_scan_verified=True,
+            backup_restore_verified=True,
+            incident_runbook_verified=True,
+            slo_alerting_verified=True,
+        )
+    )
+    assert result.ready and result.failures == ()

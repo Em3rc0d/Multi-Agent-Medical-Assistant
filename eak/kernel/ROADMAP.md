@@ -2,37 +2,40 @@
 
 ## MK0 — Architecture mining and specification
 
-Status: FROZEN for engineering incubation.
+Status: **CLOSED / FROZEN**.
 
 ## MK1 — Contract-first kernel
 
-Status: ACTIVE.
+Status: **CLOSED**.
 
-Exit gates:
-
-- Schema and semantic conformance across Medical, AEC, and Legal.
-- Deterministic fail-closed provider resolution.
-- Policy and certification boundaries.
-- Execution snapshots and lifecycle state machine.
-- At least one real runtime adapter with pause/resume integration tests.
-- No domain switch in Kernel Core.
+Exit gates passed: schema + semantic conformance across Medical/AEC/Legal, deterministic fail-closed provider resolution, policy/certification boundaries, execution snapshots/state machine, real LangGraph pause/resume integration, and no domain switch in Kernel Core.
 
 ## MK2 — Quarry #001 controlled extraction
 
-Blocked until MK1 exits. Candidate extractions are generic document parsing, retrieval, reranking, model-provider boundaries, and artifact handling. Medical semantics remain in `domain-medical`.
+Status: **ACTIVE**.
+
+Generic Docling, Qdrant, Tavily and Torch provider boundaries have been extracted. Medical semantics remain isolated in `domains/medical`. Remaining work is to complete reusable document/retrieval migration without importing Quarry-specific orchestration into the kernel.
 
 ## MK3 — Trust and evidence runtime
 
-EvidenceGraph persistence, W3C PROV export, claim assessment, approval identity, audit trail, and OpenTelemetry integration.
+Status: **ACTIVE**.
+
+Landed: tenant-scoped artifacts, durable/tamper-evident local eventing, durable approval records, evidence-graph persistence, metadata-only telemetry, secret references, and deployment-readiness gates. Remaining: production-tier persistence, external identity/RBAC integration, OpenTelemetry export, stronger claim assessment and operational audit tooling.
 
 ## MK4 — Provider ecosystem
 
-Docling, Qdrant, web-search, PyTorch/vision, MCP and A2A adapters with certification profiles.
+Status: **PARTIAL**.
+
+Docling, Qdrant, Tavily and Torch adapters exist. MCP and A2A adapters plus formal certification profiles remain open.
 
 ## MK5 — Domain packs
 
-Medical first, AEC second, Legal third. Each must use the same kernel APIs and conformance harness.
+Status: **PARTIAL**.
+
+Medical is the first executable Quarry-backed pack. AEC and Legal remain conformance packs until they gain real provider implementations. All must continue to use the same kernel APIs.
 
 ## MK6 — Production hardening
 
-RBAC, secrets, tenant isolation, encrypted artifact storage, queues/workers, durable event store, deployment, supply-chain security, dependency scanning, and disaster-recovery procedures.
+Status: **BLOCKED BY EXTERNAL INFRASTRUCTURE**.
+
+Required before any production claim: production RBAC/identity, external secrets manager, tenant isolation backed by production storage, encrypted artifact service, distributed queue/workers, production event/evidence stores, OpenTelemetry backend, deployment/rollback automation, supply-chain security, dependency scanning, backup/restore and disaster-recovery evidence.

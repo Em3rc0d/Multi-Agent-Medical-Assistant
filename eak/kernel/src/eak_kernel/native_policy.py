@@ -24,11 +24,9 @@ class ProviderUseRule:
 
 
 class NativePolicyAdapter:
-    """Small fail-closed policy engine for local/development deployments.
+    """Small fail-closed policy engine for local/engineering deployments."""
 
-    Enterprise deployments may substitute Cedar/OPA or another PDP behind the
-    same PolicyAdapter boundary.
-    """
+    deployment_tier = "local-durable"
 
     def __init__(self, rules: Iterable[ProviderUseRule], *, default_effect: str = "deny") -> None:
         self.rules = tuple(rules)

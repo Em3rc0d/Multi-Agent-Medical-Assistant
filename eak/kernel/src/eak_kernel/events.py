@@ -7,12 +7,15 @@ from .model import Event
 
 
 class EventStore(Protocol):
+    deployment_tier: str
+
     def append(self, event: Event) -> None: ...
     def stream(self, execution_id: str) -> tuple[Event, ...]: ...
 
 
 @dataclass
 class InMemoryEventStore:
+    deployment_tier = "test"
     _events: list[Event] = field(default_factory=list)
 
     def append(self, event: Event) -> None:

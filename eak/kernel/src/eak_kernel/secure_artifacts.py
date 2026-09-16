@@ -18,7 +18,9 @@ class EncryptedLocalArtifactStore:
     """Tenant-isolated, content-addressed AES-GCM artifact storage.
 
     The digest/ref is computed over plaintext for reproducibility. Bytes at rest are
-    encrypted using a per-tenant key derived from a caller-supplied master key.
+    encrypted using a per-tenant key derived from a caller-supplied master key. The
+    media type is stored in the authenticated header so reads keep the ArtifactStore
+    interface and cannot silently decrypt under different metadata.
     """
 
     _VERSION = b"EAK1"
@@ -42,7 +44,16 @@ class EncryptedLocalArtifactStore:
             nonce = os.urandom(12)
             aad = f"{tenant_id}:{digest}:{media_type}".encode("utf-8")
             ciphertext = AESGCM(self._tenant_key(tenant_id)).encrypt(nonce, bytes(data), aad)
-            path.write_bytes(self._VERSION + nonce + ciphertext)
+            media = media_type.encode("utf-8")
+            if len(media) > 65535:
+                raise ValueError("media_type is too long")
+            path.write_bytes(
+                self._VERSION
+                + len(media).to_bytes(2, "big")
+                + media
+                + nonce
+                + ciphertext
+            )
         return StoredArtifact(
             ref=f"artifact://sha256/{digest}",
             tenant=tenant_id,
@@ -51,7 +62,7 @@ class EncryptedLocalArtifactStore:
             size=len(data),
         )
 
-    def get(self, *, tenant: str, ref: str, media_type: str = "application/octet-stream") -> bytes:
+    def get(self, *, tenant: str, ref: str) -> bytes:
         tenant_id = self._safe_tenant(tenant)
         digest = self._digest_from_ref(ref)
         tenant_dir = (self.root / tenant_id).resolve()
@@ -59,10 +70,17 @@ class EncryptedLocalArtifactStore:
         if tenant_dir not in path.parents or not path.is_file():
             raise KeyError("Artifact not found")
         blob = path.read_bytes()
-        if len(blob) < len(self._VERSION) + 12 + 16 or not blob.startswith(self._VERSION):
+        if len(blob) < len(self._VERSION) + 2 + 12 + 16 or not blob.startswith(self._VERSION):
             raise ValueError("Unsupported or corrupt encrypted artifact")
-        nonce = blob[len(self._VERSION):len(self._VERSION) + 12]
-        ciphertext = blob[len(self._VERSION) + 12:]
+        cursor = len(self._VERSION)
+        media_len = int.from_bytes(blob[cursor:cursor + 2], "big")
+        cursor += 2
+        if len(blob) < cursor + media_len + 12 + 16:
+            raise ValueError("Corrupt encrypted artifact header")
+        media_type = blob[cursor:cursor + media_len].decode("utf-8")
+        cursor += media_len
+        nonce = blob[cursor:cursor + 12]
+        ciphertext = blob[cursor + 12:]
         aad = f"{tenant_id}:{digest}:{media_type}".encode("utf-8")
         data = AESGCM(self._tenant_key(tenant_id)).decrypt(nonce, ciphertext, aad)
         if sha256(data).hexdigest() != digest:
@@ -79,7 +97,10 @@ class EncryptedLocalArtifactStore:
 
     @staticmethod
     def _safe_tenant(tenant: str) -> str:
-        if not tenant or any(ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for ch in tenant):
+        if not tenant or any(
+            ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+            for ch in tenant
+        ):
             raise ValueError("Invalid tenant identifier")
         return tenant
 

@@ -4,6 +4,7 @@ from .compiler import CompileResult, GraphCompiler
 from .conformance import PaperConformanceHarness
 from .crypto import AESGCMCipher, EncryptedArtifactStore
 from .graph import SemanticGraphValidator
+from .readiness import DeploymentEvidence, ProductionReadinessGate, ReadinessResult
 from .recovery import SnapshotManifest, build_manifest, verify_manifest
 from .resolver import CapabilityResolver
 from .schema import SchemaSet
@@ -16,12 +17,15 @@ __all__ = [
     "CapabilityResolver",
     "CompileResult",
     "CompositeSecretProvider",
+    "DeploymentEvidence",
     "EncryptedArtifactStore",
     "EnvironmentSecretProvider",
     "GraphCompiler",
     "PaperConformanceHarness",
     "Principal",
+    "ProductionReadinessGate",
     "RBACAuthorizer",
+    "ReadinessResult",
     "RoleGrant",
     "SQLiteWorkQueue",
     "SchemaSet",

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eak-providers"
-version = "0.1.0.dev0"
+version = "0.2.0.dev0"
 description = "Provider adapters extracted from Quarry #001 for EAK"
 requires-python = ">=3.11"
 dependencies = []
@@ -15,6 +15,7 @@ docling = ["docling>=2.0"]
 qdrant = ["qdrant-client>=1.11"]
 tavily = ["tavily-python>=0.5"]
 pytorch = ["torch>=2.2"]
+reranker = ["sentence-transformers>=3,<6"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

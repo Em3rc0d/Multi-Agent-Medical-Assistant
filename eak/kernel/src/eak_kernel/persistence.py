@@ -15,6 +15,8 @@ class SQLiteEventStore:
         self.path = str(path)
         self._lock = Lock()
         with self._connect() as connection:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA synchronous=FULL")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS eak_events (
@@ -30,7 +32,7 @@ class SQLiteEventStore:
             )
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path)
+        return sqlite3.connect(self.path, timeout=30.0)
 
     def append(self, event: Event) -> None:
         payload = json.dumps(dict(event.payload), separators=(",", ":"), sort_keys=True)
@@ -47,3 +49,16 @@ class SQLiteEventStore:
                 (execution_id,),
             ).fetchall()
         return tuple(Event(event_type, execution_id, json.loads(payload)) for event_type, payload in rows)
+
+    def integrity_check(self) -> bool:
+        with self._connect() as connection:
+            result = connection.execute("PRAGMA quick_check").fetchone()
+        return bool(result and result[0] == "ok")
+
+    def backup_to(self, destination: str | Path) -> Path:
+        """Create a consistent online SQLite backup for recovery workflows."""
+        target = Path(destination)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with self._lock, self._connect() as source, sqlite3.connect(target) as backup:
+            source.backup(backup)
+        return target

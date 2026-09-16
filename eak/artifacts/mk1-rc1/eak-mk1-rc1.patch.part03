@@ -1,0 +1,102 @@
+ass LoadedDomainPack:
++    ref: Ref
++    document: dict[str, Any]
++
++
++class DomainPackLoader:
++    """Validates declarative Domain Packs and their declared dependencies."""
++
++    def __init__(self, schemas: SchemaSet, available: dict[Ref, dict[str, Any]] | None = None):
++        self.schemas = schemas
++        self.available = available or {}
++
++    def load(self, document: dict[str, Any]) -> LoadedDomainPack:
++        self.schemas.validate(document)
++        if document["kind"] != "DomainPack":
++            raise ValueError("Expected DomainPack")
++        if document["spec"].get("declarativeOnly") is not True:
++            raise ValueError("DomainPack must be declarativeOnly")
++        missing = []
++        for value in document["spec"].get("dependencies", []):
++            ref = Ref.from_dict(value)
++            if ref not in self.available:
++                missing.append(ref)
++        if missing:
++            rendered = ", ".join(f"{x.id}@{x.version}" for x in missing)
++            raise ValueError(f"Missing DomainPack dependencies: {rendered}")
++        ref = Ref(document["metadata"]["id"], document["metadata"]["version"])
++        self.available[ref] = document
++        return LoadedDomainPack(ref, document)
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/src/eak_kernel/evaluation.py b/src/eak_kernel/evaluation.py
+--- a/src/eak_kernel/evaluation.py	1970-01-01 00:00:00.000000000 +0000
++++ b/src/eak_kernel/evaluation.py	2026-09-16 19:19:55.429163954 +0000
+@@ -0,0 +1,47 @@
++from __future__ import annotations
++
++from dataclasses import dataclass
++from typing import Any
++
++
++@dataclass(frozen=True)
++class MetricResult:
++    metric: str
++    value: float
++    passed: bool
++
++
++@dataclass(frozen=True)
++class EvaluationResult:
++    passed: bool
++    metrics: tuple[MetricResult, ...]
++
++
++class EvaluationEngine:
++    """Deterministic metric gate evaluator for EvaluationProfile documents."""
++
++    def evaluate(self, profile: dict[str, Any], observed: dict[str, float]) -> EvaluationResult:
++        results: list[MetricResult] = []
++        metrics = profile["spec"].get("metrics", [])
++        for rule in metrics:
++            name = rule["name"]
++            if name not in observed:
++                results.append(MetricResult(name, float("nan"), False))
++                continue
++            value = float(observed[name])
++            passed = True
++            if "minimum" in rule:
++                passed = passed and value >= float(rule["minimum"])
++            if "maximum" in rule:
++                passed = passed and value <= float(rule["maximum"])
++            results.append(MetricResult(name, value, passed))
++        return EvaluationResult(all(x.passed for x in results), tuple(results))
++
++
++class CertificationGate:
++    """Produces an internal engineering certification decision from explicit gates."""
++
++    def decide(self, *, evaluation_passed: bool, security_review_passed: bool,
++               human_review_passed: bool, required_artifact_digests_present: bool) -> str:
++        return "CERTIFIED" if all((evaluation_passed, security_review_passed,
++                                   human_review_passed, required_artifact_digests_present)) else "REJECTED"
+diff -ruN '--exclude=MANIFEST.sha256' '--exclude=.pytest_cache' '--exclude=__pycache__' '--exclude=.github' a/src/eak_kernel/evidence.py b/src/eak_kernel/evidence.py
+--- a/src/eak_kernel/evidence.py	1970-01-01 00:00:00.000000000 +0000
++++ b/src/eak_kernel/evidence.py	2026-09-16 19:19:55.429095453 +0000
+@@ -0,0 +1,79 @@
++from __future__ import annotations
++
++from dataclasses import dataclass, field
++from typing import Any
++
++from .errors import EAKError
++
++
++class EvidenceGraphError(EAKError):
++    pass
++
++
++@dataclass
++class EvidenceGraphBuilder:
++    graph_id: str
++    claims: list[dict[str, Any]] = field(default_factory=list)
++    evidence: list[dict[str, Any]] = field(default_factory=list)
++    assessment

@@ -52,5 +52,7 @@ jobs:
         run: python -m pytest eak/kernel/tests -ra
       - name: Provider boundary tests
         run: python -m pytest eak/providers/tests -ra
+      - name: Domain pack manifest tests
+        run: python -m pytest eak/domains/tests -ra
       - name: Cross-domain compiler conformance
         run: eak-conformance --root eak/kernel

@@ -31,10 +31,13 @@ jobs:
         run: python -m pip install -e './eak/kernel[test,langgraph]'
       - name: Install generic provider incubation package
         run: python -m pip install -e './eak/providers[test]'
+      - name: Install medical Domain Pack adapters
+        run: python -m pip install -e './eak/domains/medical[test]'
       - name: Python source compile check
         run: |
           python -m compileall -q eak/kernel/src
           python -m compileall -q eak/providers/src
+          python -m compileall -q eak/domains/medical/src
       - name: Schema meta-validation
         shell: bash
         run: |
@@ -54,5 +57,7 @@ jobs:
         run: python -m pytest eak/providers/tests -ra
       - name: Domain pack manifest tests
         run: python -m pytest eak/domains/tests -ra
+      - name: Medical Quarry adapter tests
+        run: python -m pytest eak/domains/medical/tests -ra
       - name: Cross-domain compiler conformance
         run: eak-conformance --root eak/kernel

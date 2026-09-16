@@ -1,7 +1,56 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://eak.dev/schema/v0.2/evidence-graph.schema.json",
-  "title":"EAK EvidenceGraph Contract v0.2","type":"object","additionalProperties":false,
-  "required":["apiVersion","kind","metadata","spec"],
-  "properties":{"apiVersion":{"const":"eak/v0.2"},"kind":{"const":"EvidenceGraph"},"metadata":{"$ref":"https://eak.dev/schema/v0.2/common.schema.json#/$defs/Metadata"},"spec":{"type":"object","additionalProperties":false,"required":["nodes","edges"],"properties":{"nodes":{"type":"array","items":{"type":"object","additionalProperties":true,"required":["id","type"],"properties":{"id":{"type":"string","minLength":1},"type":{"enum":["claim","source","observation","calculation","model_inference","artifact","human_attestation","external_result","activity","agent"]}}},"edges":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["from","to","relation"],"properties":{"from":{"type":"string"},"to":{"type":"string"},"relation":{"enum":["supportedBy","contradictedBy","derivedFrom","used","wasGeneratedBy","wasAssociatedWith"]}}}}}}}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eak.dev/schema/v0.2/evidence-graph.schema.json",
+  "title": "EAK EvidenceGraph Contract v0.2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {"const": "eak/v0.2"},
+    "kind": {"const": "EvidenceGraph"},
+    "metadata": {"$ref": "https://eak.dev/schema/v0.2/common.schema.json#/$defs/Metadata"},
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["id", "type"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "type": {
+                "enum": [
+                  "claim", "source", "observation", "calculation",
+                  "model_inference", "artifact", "human_attestation",
+                  "external_result", "activity", "agent"
+                ]
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "relation"],
+            "properties": {
+              "from": {"type": "string", "minLength": 1},
+              "to": {"type": "string", "minLength": 1},
+              "relation": {
+                "enum": [
+                  "supportedBy", "contradictedBy", "derivedFrom",
+                  "used", "wasGeneratedBy", "wasAssociatedWith"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

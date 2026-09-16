@@ -1,0 +1,77 @@
+name: EAK Package CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'eak/**'
+    paths:
+      - 'eak/kernel/**'
+      - 'eak/providers/**'
+      - 'eak/domains/medical/**'
+      - '.github/workflows/eak-package-ci.yml'
+  pull_request:
+    paths:
+      - 'eak/kernel/**'
+      - 'eak/providers/**'
+      - 'eak/domains/medical/**'
+      - '.github/workflows/eak-package-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install packaging tools
+        run: python -m pip install --upgrade build twine
+      - name: Build distributions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/kernel dist/providers dist/domain-medical
+          python -m build eak/kernel --outdir dist/kernel
+          python -m build eak/providers --outdir dist/providers
+          python -m build eak/domains/medical --outdir dist/domain-medical
+      - name: Validate distribution metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m twine check dist/kernel/* dist/providers/* dist/domain-medical/*
+      - name: Record SHA-256 manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          find dist -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > dist/SHA256SUMS
+          cat dist/SHA256SUMS
+      - name: Verify wheels install in clean virtual environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv /tmp/eak-package-check
+          /tmp/eak-package-check/bin/python -m pip install --upgrade pip
+          /tmp/eak-package-check/bin/python -m pip install \
+            "$(find dist/kernel -name '*.whl' -print -quit)[security,langgraph]" \
+            "$(find dist/providers -name '*.whl' -print -quit)" \
+            "$(find dist/domain-medical -name '*.whl' -print -quit)"
+          /tmp/eak-package-check/bin/python -m pip check
+          /tmp/eak-package-check/bin/python - <<'PY'
+          import eak_kernel
+          import eak_providers
+          print('package-import-check: PASS')
+          PY
+      - name: Upload package evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: eak-package-evidence
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

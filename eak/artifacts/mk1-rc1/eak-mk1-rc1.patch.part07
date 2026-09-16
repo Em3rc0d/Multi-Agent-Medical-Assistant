@@ -1,0 +1,6 @@
+_without_content_requirement():
++    tracer = InMemoryTracer()
++    with tracer.span("node", attributes={"execution.id": "e1"}) as span:
++        span.add_event("provider.resolved", {"provider.id": "p1"})
++    assert tracer.spans[0].attributes["execution.id"] == "e1"
++    assert "prompt" not in tracer.spans[0].attributes

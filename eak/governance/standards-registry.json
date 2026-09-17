@@ -1,0 +1,290 @@
+{
+  "schemaVersion": "1.0",
+  "claimPolicy": {
+    "rule": "Internal evidence may establish EAK alignment or implementation coverage, never external certification, legal compliance, clinical validation, or regulatory approval.",
+    "externalAttestationRequiredFor": [
+      "ISO certification claims",
+      "regulatory compliance claims",
+      "clinical validation claims",
+      "jurisdiction-specific legal compliance claims"
+    ]
+  },
+  "standards": [
+    {
+      "id": "iso.iec.42001:2023",
+      "title": "AI management systems",
+      "authority": "ISO/IEC",
+      "version": "2023",
+      "category": "ai-governance",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.iso.org/standard/42001",
+      "requiredEvidence": ["ai_system_inventory", "ai_governance_policy", "ai_risk_register", "change_control", "evaluation_report"]
+    },
+    {
+      "id": "nist.ai-rmf:1.0",
+      "title": "Artificial Intelligence Risk Management Framework",
+      "authority": "NIST",
+      "version": "1.0",
+      "category": "ai-governance",
+      "status": "framework",
+      "coverage": "partial",
+      "source": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "requiredEvidence": ["ai_risk_register", "system_context", "evaluation_report", "human_oversight_record"]
+    },
+    {
+      "id": "iso.iec.23894:2023",
+      "title": "Artificial intelligence - guidance on risk management",
+      "authority": "ISO/IEC",
+      "version": "2023",
+      "category": "ai-risk",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.iso.org/standard/77304.html",
+      "requiredEvidence": ["ai_risk_register", "risk_treatment_plan", "residual_risk_record"]
+    },
+    {
+      "id": "iso.iec.27001:2022",
+      "title": "Information security management systems",
+      "authority": "ISO/IEC",
+      "version": "2022",
+      "category": "security-governance",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.iso.org/standard/27001",
+      "requiredEvidence": ["security_policy", "asset_inventory", "security_risk_register", "access_control_evidence", "incident_process"]
+    },
+    {
+      "id": "iso.iec.27701:2025",
+      "title": "Privacy information management systems",
+      "authority": "ISO/IEC",
+      "version": "2025",
+      "category": "privacy-governance",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.iso.org/standard/27701",
+      "requiredEvidence": ["privacy_inventory", "data_flow_map", "privacy_risk_assessment", "retention_policy", "data_subject_process"]
+    },
+    {
+      "id": "nist.csf:2.0",
+      "title": "Cybersecurity Framework",
+      "authority": "NIST",
+      "version": "2.0",
+      "category": "cybersecurity",
+      "status": "framework",
+      "coverage": "partial",
+      "source": "https://www.nist.gov/cyberframework",
+      "requiredEvidence": ["security_risk_register", "protect_controls", "detection_evidence", "incident_process", "recovery_evidence"]
+    },
+    {
+      "id": "nist.ssdf:1.1",
+      "title": "Secure Software Development Framework",
+      "authority": "NIST",
+      "version": "1.1",
+      "category": "secure-development",
+      "status": "published",
+      "coverage": "partial",
+      "source": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "requiredEvidence": ["secure_sdlc_policy", "dependency_audit", "code_review_evidence", "release_integrity_evidence", "vulnerability_process"]
+    },
+    {
+      "id": "iso.iec.25010:2023",
+      "title": "Systems and software product quality model",
+      "authority": "ISO/IEC",
+      "version": "2023",
+      "category": "software-quality",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.iso.org/standard/78176.html",
+      "requiredEvidence": ["quality_model", "quality_metrics", "acceptance_criteria", "test_report"]
+    },
+    {
+      "id": "owasp.llm-top10:2025",
+      "title": "OWASP Top 10 for LLM Applications",
+      "authority": "OWASP",
+      "version": "2025",
+      "category": "genai-security",
+      "status": "framework",
+      "coverage": "partial",
+      "source": "https://genai.owasp.org/llm-top-10/",
+      "requiredEvidence": ["threat_model", "prompt_injection_tests", "sensitive_data_tests", "tool_authorization_tests", "model_supply_chain_record"]
+    },
+    {
+      "id": "slsa:1.2",
+      "title": "Supply-chain Levels for Software Artifacts",
+      "authority": "OpenSSF / SLSA",
+      "version": "1.2",
+      "category": "software-supply-chain",
+      "status": "published",
+      "coverage": "partial",
+      "source": "https://slsa.dev/spec/v1.2/",
+      "requiredEvidence": ["build_provenance", "release_integrity_evidence", "builder_identity", "dependency_audit"]
+    },
+    {
+      "id": "cyclonedx:1.7",
+      "title": "CycloneDX Bill of Materials",
+      "authority": "OWASP Foundation",
+      "version": "1.7",
+      "category": "software-supply-chain",
+      "status": "published",
+      "coverage": "implemented",
+      "source": "https://cyclonedx.org/specification/overview/",
+      "requiredEvidence": ["cyclonedx_sbom", "sbom_digest", "dependency_audit"]
+    },
+    {
+      "id": "spdx:3.0.1",
+      "title": "System Package Data Exchange",
+      "authority": "Linux Foundation / SPDX",
+      "version": "3.0.1",
+      "category": "software-supply-chain",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://spdx.github.io/spdx-spec/v3.0.1/",
+      "requiredEvidence": ["spdx_bom", "license_inventory", "artifact_provenance"]
+    },
+    {
+      "id": "w3c.prov-o:2013",
+      "title": "PROV-O Provenance Ontology",
+      "authority": "W3C",
+      "version": "2013 Recommendation",
+      "category": "provenance",
+      "status": "recommendation",
+      "coverage": "implemented",
+      "source": "https://www.w3.org/TR/prov-o/",
+      "requiredEvidence": ["evidence_graph", "provenance_export", "artifact_digest"]
+    },
+    {
+      "id": "opentelemetry:1.61",
+      "title": "OpenTelemetry specification",
+      "authority": "OpenTelemetry",
+      "version": "1.61.0 / OTLP 1.11.0",
+      "category": "observability",
+      "status": "published",
+      "coverage": "partial",
+      "source": "https://opentelemetry.io/docs/specs/",
+      "requiredEvidence": ["telemetry_schema", "trace_evidence", "sensitive_telemetry_tests"]
+    },
+    {
+      "id": "mcp:2026-07-28",
+      "title": "Model Context Protocol",
+      "authority": "MCP maintainers",
+      "version": "2026-07-28",
+      "category": "agent-tool-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://blog.modelcontextprotocol.io/posts/2026-07-28/",
+      "requiredEvidence": ["mcp_conformance_test", "mcp_auth_test", "capability_negotiation_test", "protocol_version_record"]
+    },
+    {
+      "id": "a2a:1.0.0",
+      "title": "Agent2Agent Protocol",
+      "authority": "A2A Project",
+      "version": "1.0.0",
+      "category": "agent-agent-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://a2a-protocol.org/v1.0.0/specification/",
+      "requiredEvidence": ["a2a_conformance_test", "agent_card_validation", "protocol_version_record", "cross_agent_auth_test"]
+    },
+    {
+      "id": "hl7.fhir:r5",
+      "title": "Fast Healthcare Interoperability Resources",
+      "authority": "HL7",
+      "version": "R5 5.0.0",
+      "category": "medical-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://hl7.org/fhir/",
+      "requiredEvidence": ["fhir_profile", "fhir_validation_report", "terminology_binding_record", "medical_data_contract"]
+    },
+    {
+      "id": "dicom:2026c",
+      "title": "Digital Imaging and Communications in Medicine",
+      "authority": "DICOM Standards Committee / NEMA",
+      "version": "2026c",
+      "category": "medical-imaging-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://dicom.nema.org/medical/dicom/current/",
+      "requiredEvidence": ["dicom_conformance_statement", "dicom_validation_report", "deidentification_test", "medical_imaging_contract"]
+    },
+    {
+      "id": "ifc:4.3.2.0",
+      "title": "Industry Foundation Classes",
+      "authority": "buildingSMART International",
+      "version": "4.3.2.0 / ISO 16739-1:2024",
+      "category": "aec-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/",
+      "requiredEvidence": ["ifc_validation_report", "ifc_schema_version", "bim_artifact_provenance"]
+    },
+    {
+      "id": "buildingSMART.ids:1.0",
+      "title": "Information Delivery Specification",
+      "authority": "buildingSMART International",
+      "version": "1.0",
+      "category": "aec-information-requirements",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://standards.buildingsmart.org/",
+      "requiredEvidence": ["ids_validation_report", "information_requirement_contract", "ifc_validation_report"]
+    },
+    {
+      "id": "buildingSMART.bcf:3.0",
+      "title": "BIM Collaboration Format",
+      "authority": "buildingSMART International",
+      "version": "3.0",
+      "category": "aec-collaboration",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://standards.buildingsmart.org/",
+      "requiredEvidence": ["bcf_interop_test", "issue_exchange_contract", "bim_artifact_provenance"]
+    },
+    {
+      "id": "oasis.akn:1.0",
+      "title": "Akoma Ntoso",
+      "authority": "OASIS LegalDocML",
+      "version": "1.0",
+      "category": "legal-document-interoperability",
+      "status": "published",
+      "coverage": "target",
+      "source": "https://www.oasis-open.org/standards/",
+      "requiredEvidence": ["akn_schema_validation", "legal_document_provenance", "jurisdiction_metadata", "temporal_validity_test"]
+    }
+  ],
+  "profiles": {
+    "platform.baseline": [
+      "iso.iec.42001:2023",
+      "nist.ai-rmf:1.0",
+      "iso.iec.23894:2023",
+      "iso.iec.27001:2022",
+      "iso.iec.27701:2025",
+      "nist.csf:2.0",
+      "nist.ssdf:1.1",
+      "iso.iec.25010:2023",
+      "owasp.llm-top10:2025",
+      "w3c.prov-o:2013",
+      "opentelemetry:1.61",
+      "slsa:1.2",
+      "cyclonedx:1.7",
+      "spdx:3.0.1"
+    ],
+    "interop.agents": ["mcp:2026-07-28", "a2a:1.0.0"],
+    "domain.medical": ["hl7.fhir:r5", "dicom:2026c"],
+    "domain.aec": ["ifc:4.3.2.0", "buildingSMART.ids:1.0", "buildingSMART.bcf:3.0"],
+    "domain.legal": ["oasis.akn:1.0"]
+  },
+  "watchlist": [
+    {
+      "id": "nist.ssdf:1.2-draft",
+      "reason": "Initial Public Draft exists; do not replace the final 1.1 baseline until NIST publishes a final revision.",
+      "source": "https://csrc.nist.gov/pubs/sp/800/218/r1/ipd"
+    },
+    {
+      "id": "nist.ai-rmf:revision",
+      "reason": "NIST is revising AI RMF 1.0; track changes without silently changing certification evidence semantics.",
+      "source": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import tempfile
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -34,26 +36,33 @@ class InMemoryArtifactStore:
         try:
             return self._objects[(tenant, ref)]
         except KeyError as exc:
-            # Deliberately indistinguishable from an unknown ref in another tenant.
             raise KeyError("Artifact not found") from exc
 
 
 class LocalArtifactStore:
-    """Content-addressed local backend for development, never raw static serving."""
+    """Content-addressed local backend with tenant isolation and atomic writes."""
 
     def __init__(self, root: str | Path) -> None:
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
+        try:
+            self.root.chmod(0o700)
+        except OSError:
+            pass
 
     def put(self, *, tenant: str, data: bytes, media_type: str) -> StoredArtifact:
         digest = sha256(data).hexdigest()
         tenant_dir = (self.root / self._safe_tenant(tenant)).resolve()
         tenant_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            tenant_dir.chmod(0o700)
+        except OSError:
+            pass
         path = (tenant_dir / digest).resolve()
         if tenant_dir not in path.parents:
             raise ValueError("Artifact path escaped tenant boundary")
         if not path.exists():
-            path.write_bytes(data)
+            self._atomic_write(path, data)
         return StoredArtifact(
             ref=f"artifact://sha256/{digest}", tenant=tenant,
             digest=f"sha256:{digest}", media_type=media_type, size=len(data),
@@ -69,6 +78,24 @@ class LocalArtifactStore:
         if sha256(data).hexdigest() != digest:
             raise ValueError("Artifact integrity check failed")
         return data
+
+    @staticmethod
+    def _atomic_write(path: Path, data: bytes) -> None:
+        fd, tmp_name = tempfile.mkstemp(prefix=".eak-artifact-", dir=path.parent)
+        tmp = Path(tmp_name)
+        try:
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(data)
+                handle.flush()
+                os.fsync(handle.fileno())
+            try:
+                tmp.chmod(0o600)
+            except OSError:
+                pass
+            os.replace(tmp, path)
+        finally:
+            if tmp.exists():
+                tmp.unlink()
 
     @staticmethod
     def _safe_tenant(tenant: str) -> str:

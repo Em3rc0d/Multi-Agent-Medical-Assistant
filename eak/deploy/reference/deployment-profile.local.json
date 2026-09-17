@@ -1,0 +1,28 @@
+{
+  "environment": "development",
+  "adapters": {
+    "identity": "local",
+    "secretManager": "env",
+    "artifactStore": "encrypted-local",
+    "database": "sqlite",
+    "queue": "sqlite"
+  },
+  "slo": {
+    "availabilityTarget": 0.99,
+    "p95LatencyMs": 5000
+  },
+  "operations": {
+    "incidentOwner": null,
+    "onCallChannel": null,
+    "backupPolicy": "manual-reference",
+    "lastRestoreDrillAt": null,
+    "maxRestoreDrillAgeDays": 90
+  },
+  "security": {
+    "sbomRequired": true,
+    "dependencyAuditRequired": true,
+    "tenantIsolationTested": false
+  },
+  "providerCertificationProfile": null,
+  "contentTelemetryEnabled": false
+}

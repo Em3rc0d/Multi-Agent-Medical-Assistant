@@ -18,15 +18,15 @@ Generic document parsing, Qdrant retrieval, Tavily search, PyTorch boundaries an
 
 ## MK3 — Trust and evidence runtime
 
-Status: **ACTIVE**.
+Status: **ACTIVE / FOUNDATION DURABLE**.
 
-Implemented foundations: EvidenceGraph + PROV-compatible export, durable SQLite evidence persistence, authenticated approval contracts + durable decision store, append-only execution event persistence, content-off telemetry and evaluation gates.
+EvidenceGraph + PROV-compatible export, durable evidence persistence, authenticated approval contracts + immutable decisions, append-only execution audit events, metadata-only telemetry, and evaluation gates exist. Distributed/managed backends remain deployment work.
 
 ## MK4 — Provider ecosystem
 
 Status: **ACTIVE**.
 
-Incubated provider boundaries exist for Docling, Qdrant, Tavily and PyTorch. MCP/A2A adapters and provider certification automation remain open.
+Incubated provider boundaries exist for Docling, Qdrant, Tavily and PyTorch. Durable invocation workers now bridge frozen provider selections to at-least-once execution with audit events and idempotency enforcement. MCP/A2A adapters and automated provider certification remain open.
 
 ## MK5 — Domain packs
 
@@ -36,8 +36,8 @@ Medical is the first executable Domain Pack. AEC and Legal manifests participate
 
 ## MK6 — Production hardening
 
-Status: **ACTIVE**.
+Status: **ACTIVE / AUTOMATABLE BASELINE IMPLEMENTED**.
 
-Implemented foundations: RBAC/tenant enforcement primitives, secret references/resolvers, tenant-isolated encrypted local artifact storage, durable SQLite event/evidence/approval stores, durable work queue with leases/retries, CI across Python 3.11–3.13, and dependency consistency checks.
+Implemented foundations: RBAC/tenant enforcement primitives, secret references/resolvers, tenant-isolated encrypted local artifact storage, durable event/evidence/approval stores, durable work queue with leases/retries, OpenTelemetry boundary, Python 3.11–3.13 CI, dependency audit, CycloneDX SBOM generation, operations/runbook docs, and fail-closed deployment readiness checks.
 
-Still open before a production claim: managed identity integration, external KMS/secret manager adapters, managed object storage/database backends, distributed queue/worker deployment, supply-chain vulnerability/SBOM gates, backup/restore drills, SLOs, deployment environments and incident-response validation.
+Still open before a production claim because they require a real target environment: managed identity, external KMS/secret manager, managed object/database/queue backends, restore drill evidence, deployed SLO monitoring, incident-response ownership and end-to-end production-like validation.

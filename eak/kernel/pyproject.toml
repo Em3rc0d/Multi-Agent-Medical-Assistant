@@ -20,6 +20,7 @@ observability = ["opentelemetry-api>=1.27,<2"]
 
 [project.scripts]
 eak-conformance = "eak_kernel.cli:main"
+eak-readiness = "eak_kernel.readiness_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

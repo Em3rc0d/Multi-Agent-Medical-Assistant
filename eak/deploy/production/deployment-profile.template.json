@@ -1,0 +1,28 @@
+{
+  "environment": "production",
+  "adapters": {
+    "identity": "REPLACE_WITH_OIDC_OR_WORKLOAD_IDENTITY",
+    "secretManager": "REPLACE_WITH_MANAGED_SECRET_MANAGER",
+    "artifactStore": "REPLACE_WITH_OBJECT_STORAGE_KMS",
+    "database": "REPLACE_WITH_MANAGED_TRANSACTIONAL_STORE",
+    "queue": "REPLACE_WITH_DISTRIBUTED_QUEUE"
+  },
+  "slo": {
+    "availabilityTarget": 0.995,
+    "p95LatencyMs": 2500
+  },
+  "operations": {
+    "incidentOwner": "REPLACE_ME",
+    "onCallChannel": "REPLACE_ME",
+    "backupPolicy": "REPLACE_ME",
+    "lastRestoreDrillAt": "REPLACE_WITH_ISO8601_TIMESTAMP",
+    "maxRestoreDrillAgeDays": 90
+  },
+  "security": {
+    "sbomRequired": true,
+    "dependencyAuditRequired": true,
+    "tenantIsolationTested": true
+  },
+  "providerCertificationProfile": "REPLACE_WITH_CERTIFICATION_PROFILE",
+  "contentTelemetryEnabled": false
+}

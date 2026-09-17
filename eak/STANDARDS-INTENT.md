@@ -1,5 +1,7 @@
 # EAK Standards Intent
 
-This placeholder records the architectural intent to move standards coverage into an explicit, machine-verifiable layer rather than scattered documentation. The full standards registry, profiles, evidence model, and conformance gates are introduced in the next standards-solidification change set.
+Standards governance is now an explicit engineering subsystem rather than scattered documentation.
 
-This file is intentionally minimal and does not claim certification or regulatory compliance.
+Canonical artifacts live under `eak/governance/` and are enforced by `eak_kernel.standards.StandardsRegistry`, `StandardsGate`, JSON Schema validation and the dedicated `EAK Standards Governance` CI workflow.
+
+The standards layer covers horizontal platform concerns plus Medical, AEC, Legal and agent interoperability profiles. It is evidence-first and fail-closed, and it deliberately distinguishes internal implementation/alignment evidence from external certification, regulatory approval, clinical validation or jurisdiction-specific legal compliance.

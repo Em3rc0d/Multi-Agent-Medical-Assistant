@@ -1,0 +1,49 @@
+name: EAK Standards Governance
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'eak/**'
+    paths:
+      - 'eak/governance/**'
+      - 'eak/kernel/src/eak_kernel/standards.py'
+      - 'eak/kernel/tests/test_standards_governance.py'
+      - '.github/workflows/eak-standards-governance.yml'
+  pull_request:
+    paths:
+      - 'eak/governance/**'
+      - 'eak/kernel/src/eak_kernel/standards.py'
+      - 'eak/kernel/tests/test_standards_governance.py'
+      - '.github/workflows/eak-standards-governance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  standards-governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install EAK kernel test dependencies
+        run: python -m pip install -e 'eak/kernel[test]'
+      - name: Validate standards registry and fail-closed evidence gate
+        run: python -m pytest -q eak/kernel/tests/test_standards_governance.py
+      - name: Verify registry is parseable without optional dependencies
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from eak_kernel.standards import StandardsRegistry
+
+          path = Path('eak/governance/standards-registry.json')
+          registry = StandardsRegistry.from_file(path)
+          print(f'standards={len(registry.all())}')
+          print('profiles=' + ','.join(registry.profile_ids()))
+          PY

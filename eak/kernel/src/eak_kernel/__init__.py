@@ -8,6 +8,7 @@ from .queue import SQLiteWorkQueue, WorkItem
 from .resolver import CapabilityResolver
 from .schema import SchemaSet
 from .secrets import EnvironmentSecretResolver, MappingSecretResolver, SecretRef
+from .standards import StandardSpec, StandardsGate, StandardsGateResult, StandardsRegistry
 
 __all__ = [
     "CapabilityResolver",
@@ -21,6 +22,10 @@ __all__ = [
     "SchemaSet",
     "SecretRef",
     "SemanticGraphValidator",
+    "StandardSpec",
+    "StandardsGate",
+    "StandardsGateResult",
+    "StandardsRegistry",
     "WorkItem",
     "require_tenant_access",
 ]

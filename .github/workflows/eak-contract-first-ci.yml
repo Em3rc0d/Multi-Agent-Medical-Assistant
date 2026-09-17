@@ -3,6 +3,8 @@ name: EAK Contract-First CI
 on:
   push:
     branches:
+      - main
+      - dev
       - 'eak/**'
     paths:
       - 'eak/**'
@@ -23,17 +25,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: eak/kernel/pyproject.toml
 
       - name: Install contract-first kernel
-        run: python -m pip install -e './eak/kernel[test,langgraph]'
+        run: python -m pip install -e './eak/kernel[test,langgraph,security,observability]'
+
+      - name: Verify dependency consistency
+        run: python -m pip check
 
       - name: Validate Python sources
         run: python -m compileall -q eak/kernel/src

@@ -2,37 +2,42 @@
 
 ## MK0 — Architecture mining and specification
 
-Status: FROZEN for engineering incubation.
+Status: **FROZEN / CLOSED** for engineering incubation.
 
 ## MK1 — Contract-first kernel
 
-Status: ACTIVE.
+Status: **CLOSED**.
 
-Exit gates:
-
-- Schema and semantic conformance across Medical, AEC, and Legal.
-- Deterministic fail-closed provider resolution.
-- Policy and certification boundaries.
-- Execution snapshots and lifecycle state machine.
-- At least one real runtime adapter with pause/resume integration tests.
-- No domain switch in Kernel Core.
+Exit gates are green: schema and semantic conformance across Medical/AEC/Legal, deterministic fail-closed resolution, policy/certification boundaries, execution snapshots/lifecycle, LangGraph pause/resume integration, and no domain switch in Kernel Core.
 
 ## MK2 — Quarry #001 controlled extraction
 
-Blocked until MK1 exits. Candidate extractions are generic document parsing, retrieval, reranking, model-provider boundaries, and artifact handling. Medical semantics remain in `domain-medical`.
+Status: **ACTIVE / SUBSTANTIALLY EXTRACTED**.
+
+Generic document parsing, Qdrant retrieval, Tavily search, PyTorch boundaries and medical adapters have been separated into provider/domain packages. Remaining work is migration of legacy application entrypoints away from direct agent coupling.
 
 ## MK3 — Trust and evidence runtime
 
-EvidenceGraph persistence, W3C PROV export, claim assessment, approval identity, audit trail, and OpenTelemetry integration.
+Status: **ACTIVE / FOUNDATION DURABLE**.
+
+EvidenceGraph + PROV-compatible export, durable evidence persistence, authenticated approval contracts + immutable decisions, append-only execution audit events, metadata-only telemetry, and evaluation gates exist. Distributed/managed backends remain deployment work.
 
 ## MK4 — Provider ecosystem
 
-Docling, Qdrant, web-search, PyTorch/vision, MCP and A2A adapters with certification profiles.
+Status: **ACTIVE**.
+
+Incubated provider boundaries exist for Docling, Qdrant, Tavily and PyTorch. Durable invocation workers now bridge frozen provider selections to at-least-once execution with audit events and idempotency enforcement. MCP/A2A adapters and automated provider certification remain open.
 
 ## MK5 — Domain packs
 
-Medical first, AEC second, Legal third. Each must use the same kernel APIs and conformance harness.
+Status: **ACTIVE**.
+
+Medical is the first executable Domain Pack. AEC and Legal manifests participate in the same contract/conformance model and remain intentionally thin until their real providers are introduced.
 
 ## MK6 — Production hardening
 
-RBAC, secrets, tenant isolation, encrypted artifact storage, queues/workers, durable event store, deployment, supply-chain security, dependency scanning, and disaster-recovery procedures.
+Status: **ACTIVE / AUTOMATABLE BASELINE IMPLEMENTED**.
+
+Implemented foundations: RBAC/tenant enforcement primitives, secret references/resolvers, tenant-isolated encrypted local artifact storage, durable event/evidence/approval stores, durable work queue with leases/retries, OpenTelemetry boundary, Python 3.11–3.13 CI, dependency audit, CycloneDX SBOM generation, operations/runbook docs, and fail-closed deployment readiness checks.
+
+Still open before a production claim because they require a real target environment: managed identity, external KMS/secret manager, managed object/database/queue backends, restore drill evidence, deployed SLO monitoring, incident-response ownership and end-to-end production-like validation.

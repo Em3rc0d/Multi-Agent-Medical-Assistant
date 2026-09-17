@@ -3,7 +3,9 @@ name: EAK CI
 on:
   push:
     branches:
-      - eak/mk1-contract-first
+      - main
+      - dev
+      - 'eak/**'
     paths:
       - "eak/**"
       - ".github/workflows/eak-ci.yml"
@@ -11,6 +13,7 @@ on:
     paths:
       - "eak/**"
       - ".github/workflows/eak-ci.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,16 +26,18 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install EAK kernel with LangGraph integration
-        run: python -m pip install -e './eak/kernel[test,langgraph]'
+      - name: Install EAK kernel with runtime, security and observability extras
+        run: python -m pip install -e './eak/kernel[test,langgraph,security,observability]'
       - name: Install generic provider incubation package
         run: python -m pip install -e './eak/providers[test]'
       - name: Install medical Domain Pack adapters
         run: python -m pip install -e './eak/domains/medical[test]'
+      - name: Verify dependency consistency
+        run: python -m pip check
       - name: Python source compile check
         run: |
           python -m compileall -q eak/kernel/src

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eak-kernel"
-version = "0.1.0.dev0"
+version = "0.2.0.dev0"
 description = "Domain-agnostic execution and trust kernel for verifiable expert systems"
 requires-python = ">=3.11"
 dependencies = [
@@ -15,9 +15,12 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest>=8.3,<10"]
 langgraph = ["langgraph>=1.2.11,<1.3"]
+security = ["cryptography>=50,<51"]
+observability = ["opentelemetry-api>=1.27,<2"]
 
 [project.scripts]
 eak-conformance = "eak_kernel.cli:main"
+eak-readiness = "eak_kernel.readiness_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

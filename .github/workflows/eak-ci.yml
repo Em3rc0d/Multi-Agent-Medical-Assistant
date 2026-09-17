@@ -30,8 +30,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install EAK kernel with runtime and security extras
-        run: python -m pip install -e './eak/kernel[test,langgraph,security]'
+      - name: Install EAK kernel with runtime, security and observability extras
+        run: python -m pip install -e './eak/kernel[test,langgraph,security,observability]'
       - name: Install generic provider incubation package
         run: python -m pip install -e './eak/providers[test]'
       - name: Install medical Domain Pack adapters

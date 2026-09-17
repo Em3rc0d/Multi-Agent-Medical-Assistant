@@ -13,8 +13,11 @@ This phase turns the v0.2 contract-first baseline into an operationally credible
 - Durable approval requests/immutable reviewer decisions.
 - Durable EvidenceGraph persistence.
 - Optional Fernet encrypted local artifact storage with per-tenant paths and content-integrity verification.
-- CI now runs on `main`, `dev`, and all `eak/**` branches and installs the security extra.
-- Dependency consistency (`pip check`) is a required gate.
+- Queue-to-provider worker bridge: durable `InvocationRequest` delivery, invoker dispatch, audit events, retries and side-effect idempotency enforcement.
+- Optional OpenTelemetry metadata-only sink; content capture remains rejected by default.
+- CI runs on `main`, `dev`, and all `eak/**` branches and installs security/observability extras.
+- Dependency consistency (`pip check`) is required.
+- Dedicated supply-chain workflow audits Python dependencies and emits a CycloneDX SBOM artifact.
 
 ## Architectural invariants preserved
 
@@ -22,9 +25,10 @@ This phase turns the v0.2 contract-first baseline into an operationally credible
 2. Secrets enter through resolver boundaries, not execution snapshots.
 3. Artifact access always includes tenant identity.
 4. Human approval is bound to an authenticated principal and role evidence.
-5. Work execution is at-least-once; providers with side effects remain responsible for idempotency keys declared by the ExecutionGraph.
+5. Work execution is at-least-once; side-effecting invocations require an idempotency key before queue admission.
 6. Durable stores remain replaceable adapters; SQLite is the reference/local backend, not a distributed production database claim.
+7. Telemetry is metadata-first and rejects prompt/document/content capture by default.
 
 ## Remaining production gates
 
-Managed KMS/secrets, object storage, database and queue adapters; SBOM/vulnerability gates; deployment manifests; backup/restore drills; SLO/error-budget definitions; incident-response exercises; and end-to-end production-like validation.
+Managed KMS/secrets, object storage, database and distributed queue adapters; deployment manifests; backup/restore drills; SLO/error-budget definitions; incident-response exercises; and end-to-end production-like validation.

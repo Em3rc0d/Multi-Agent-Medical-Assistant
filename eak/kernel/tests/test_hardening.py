@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 from eak_kernel.approval import ApprovalDecision, ApprovalRequest
@@ -69,25 +67,51 @@ def test_sqlite_work_queue_marks_exhausted_item_dead(tmp_path):
     assert queue.lease(worker_id="worker-b") is None
 
 
-def test_durable_approval_decisions_are_role_verified_and_immutable(tmp_path):
+def test_durable_approval_decisions_are_authenticated_tenant_scoped_and_immutable(tmp_path):
     store = SQLiteApprovalStore(tmp_path / "approval.sqlite")
     request = ApprovalRequest(
         id="approval://1", execution_id="execution://1", node_id="review",
         profile="medical-review", required_roles=("clinician",), scope=("claim://1",),
+        tenant="tenant-a",
+    )
+    store.put_request(request)
+    principal = Principal("principal://doctor", "tenant-a", ("clinician",))
+    decision = ApprovalDecision(
+        request_id=request.id, execution_id=request.execution_id,
+        principal_ref=principal.id, authenticated_roles=("clinician",), decision="APPROVE",
+    )
+    store.record_decision(decision, principal=principal)
+    assert store.get_decision(request.id) == decision
+
+    conflicting = ApprovalDecision(
+        request_id=request.id, execution_id=request.execution_id,
+        principal_ref=principal.id, authenticated_roles=("clinician",), decision="REJECT",
+    )
+    with pytest.raises(ValueError):
+        store.record_decision(conflicting, principal=principal)
+
+
+def test_durable_approval_rejects_cross_tenant_or_forged_roles(tmp_path):
+    store = SQLiteApprovalStore(tmp_path / "approval.sqlite")
+    request = ApprovalRequest(
+        id="approval://2", execution_id="execution://2", node_id="review",
+        profile="medical-review", required_roles=("clinician",), tenant="tenant-a",
     )
     store.put_request(request)
     decision = ApprovalDecision(
         request_id=request.id, execution_id=request.execution_id,
-        principal_ref="principal://doctor", authenticated_roles=("clinician",), decision="APPROVE",
+        principal_ref="principal://reviewer", authenticated_roles=("clinician",), decision="APPROVE",
     )
-    store.record_decision(decision)
-    assert store.get_decision(request.id) == decision
-    conflicting = ApprovalDecision(
-        request_id=request.id, execution_id=request.execution_id,
-        principal_ref="principal://doctor", authenticated_roles=("clinician",), decision="REJECT",
-    )
-    with pytest.raises(ValueError):
-        store.record_decision(conflicting)
+    with pytest.raises(PermissionError):
+        store.record_decision(
+            decision,
+            principal=Principal("principal://reviewer", "tenant-b", ("clinician",)),
+        )
+    with pytest.raises(PermissionError):
+        store.record_decision(
+            decision,
+            principal=Principal("principal://reviewer", "tenant-a", ("viewer",)),
+        )
 
 
 def test_evidence_graph_round_trips_through_sqlite(tmp_path):
@@ -103,7 +127,7 @@ def test_evidence_graph_round_trips_through_sqlite(tmp_path):
 
 
 def test_encrypted_artifact_store_is_tenant_isolated_and_not_plaintext(tmp_path):
-    cryptography = pytest.importorskip("cryptography")
+    pytest.importorskip("cryptography")
     from cryptography.fernet import Fernet
 
     root = tmp_path / "artifacts"

@@ -3,8 +3,14 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
+from typing import Protocol
 
 from .evidence import EvidenceEdge, EvidenceGraph, EvidenceNode
+
+
+class EvidenceStore(Protocol):
+    def save(self, execution_id: str, graph: EvidenceGraph) -> None: ...
+    def load(self, execution_id: str) -> EvidenceGraph: ...
 
 
 class SQLiteEvidenceStore:

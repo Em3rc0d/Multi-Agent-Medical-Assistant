@@ -3,12 +3,26 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
+from typing import Any, Mapping, Protocol
 
 from .approval import ApprovalDecision, ApprovalRequest, ApprovalVerifier
+from .identity import Principal
+
+
+class ApprovalStore(Protocol):
+    def put_request(self, request: ApprovalRequest) -> None: ...
+    def record_decision(
+        self,
+        decision: ApprovalDecision,
+        *,
+        principal: Principal | Mapping[str, Any],
+    ) -> None: ...
+    def get_request(self, request_id: str) -> ApprovalRequest: ...
+    def get_decision(self, request_id: str) -> ApprovalDecision | None: ...
 
 
 class SQLiteApprovalStore:
-    """Durable approval requests and immutable reviewer decisions."""
+    """Durable approval requests and immutable, authenticated reviewer decisions."""
 
     def __init__(self, path: str | Path) -> None:
         self.path = str(path)
@@ -33,9 +47,14 @@ class SQLiteApprovalStore:
                 (request.id, body),
             )
 
-    def record_decision(self, decision: ApprovalDecision) -> None:
+    def record_decision(
+        self,
+        decision: ApprovalDecision,
+        *,
+        principal: Principal | Mapping[str, Any],
+    ) -> None:
         request = self.get_request(decision.request_id)
-        ApprovalVerifier.verify(request, decision)
+        ApprovalVerifier.verify_authenticated(request, decision, principal)
         body = self._decision_to_json(decision)
         with sqlite3.connect(self.path) as connection:
             existing = connection.execute(
@@ -62,7 +81,7 @@ class SQLiteApprovalStore:
         return ApprovalRequest(
             id=value["id"], execution_id=value["execution_id"], node_id=value["node_id"],
             profile=value["profile"], required_roles=tuple(value["required_roles"]),
-            scope=tuple(value["scope"]),
+            scope=tuple(value["scope"]), tenant=value.get("tenant"),
         )
 
     def get_decision(self, request_id: str) -> ApprovalDecision | None:
@@ -89,6 +108,7 @@ class SQLiteApprovalStore:
             "profile": request.profile,
             "required_roles": list(request.required_roles),
             "scope": list(request.scope),
+            "tenant": request.tenant,
         }, separators=(",", ":"), sort_keys=True)
 
     @staticmethod

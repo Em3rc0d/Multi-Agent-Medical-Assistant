@@ -6,7 +6,7 @@ from typing import Any, Mapping
 from .events import EventStore
 from .invocation import InvocationRequest, InvocationResult, InvokerRegistry
 from .model import Event, Ref
-from .queue import SQLiteWorkQueue, WorkItem
+from .queue import WorkItem, WorkQueue
 from .telemetry import TelemetrySink
 
 
@@ -38,7 +38,7 @@ def invocation_from_payload(payload: Mapping[str, Any]) -> InvocationRequest:
 
 @dataclass
 class InvocationDispatcher:
-    queue: SQLiteWorkQueue
+    queue: WorkQueue
 
     def submit(self, request: InvocationRequest, *, max_attempts: int = 3) -> WorkItem:
         if request.context.get("sideEffecting") and not request.idempotency_key:
@@ -53,7 +53,7 @@ class InvocationDispatcher:
 
 @dataclass
 class InvocationWorker:
-    queue: SQLiteWorkQueue
+    queue: WorkQueue
     invokers: InvokerRegistry
     events: EventStore
     telemetry: TelemetrySink | None = None

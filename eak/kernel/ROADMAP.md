@@ -20,7 +20,7 @@ Generic document parsing, Qdrant retrieval, Tavily search, PyTorch boundaries, e
 
 Status: **ACTIVE / DURABLE FOUNDATION**.
 
-EvidenceGraph + PROV-compatible export, durable evidence persistence, authenticated tenant-scoped approvals, tamper-evident append-only execution events, online reference backup support, snapshot integrity manifests, metadata-only telemetry and evaluation gates exist. Distributed/managed backends remain deployment work.
+EvidenceGraph + PROV-compatible export, durable evidence persistence, authenticated tenant-scoped approvals, immutable/digest-verified ExecutionContext snapshots, tamper-evident append-only execution events, online reference backup support, snapshot integrity manifests, metadata-only telemetry and evaluation gates exist. Distributed/managed backends remain deployment work.
 
 ## MK4 — Provider ecosystem
 
@@ -38,6 +38,6 @@ Medical is the first executable Domain Pack. AEC and Legal manifests participate
 
 Status: **ACTIVE / AUTOMATABLE BASELINE IMPLEMENTED**.
 
-Implemented foundations: RBAC/tenant enforcement primitives, secret references/resolvers, tenant-isolated encrypted artifact stores, generic AES-GCM artifact encryption boundary, durable event/evidence/approval stores, work queue with leases/retries, tamper-evident audit history, backup/snapshot integrity checks, OpenTelemetry boundary, Python 3.11–3.13 CI, dependency audit, CycloneDX SBOM generation, package integrity gates, operations/runbook docs, and fail-closed deployment readiness checks.
+Implemented foundations: RBAC/tenant enforcement primitives, secret references/resolvers, tenant-isolated encrypted artifact stores, generic AES-GCM artifact encryption boundary, immutable execution snapshots, durable event/evidence/approval stores, work queue with leases/retries, tamper-evident audit history, backup/snapshot integrity checks, OpenTelemetry boundary, Python 3.11–3.13 CI, dependency audit, CycloneDX SBOM generation, package integrity gates, operations/runbook docs, and fail-closed deployment readiness checks.
 
 Still open before a production claim because they require a real target environment: managed identity, external KMS/secret manager, managed object/database/queue backends, restore-drill evidence against those backends, deployed SLO monitoring, incident-response ownership and end-to-end production-like validation.

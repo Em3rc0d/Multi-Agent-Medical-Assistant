@@ -13,6 +13,7 @@ class ProviderUseRule:
     provider_prefix: str | None = None
     required_roles: tuple[str, ...] = ()
     deny_egress_for_classifications: tuple[str, ...] = ()
+    require_tenant_match: bool = False
     effect: str = "allow"
 
     def matches(self, capability: Ref, provider: Ref) -> bool:
@@ -48,20 +49,27 @@ class NativePolicyAdapter:
         for rule in self.rules:
             if not rule.matches(capability, provider):
                 continue
+            if rule.require_tenant_match:
+                principal_tenant = (principal or {}).get("tenant") or (principal or {}).get("tenantId")
+                resource_tenant = context.get("resourceTenant")
+                if not principal_tenant or not resource_tenant or principal_tenant != resource_tenant:
+                    return PolicyDecision(
+                        effect="deny", reasons=(f"tenant-mismatch:{rule.id}",), policy_version="native/v2"
+                    )
             if rule.required_roles and not roles.intersection(rule.required_roles):
                 return PolicyDecision(
-                    effect="deny", reasons=(f"missing-role:{rule.id}",), policy_version="native/v1"
+                    effect="deny", reasons=(f"missing-role:{rule.id}",), policy_version="native/v2"
                 )
             if (
                 classification in rule.deny_egress_for_classifications
                 and provider_egress in {"required", "policy-controlled"}
             ):
                 return PolicyDecision(
-                    effect="deny", reasons=(f"egress-denied:{rule.id}",), policy_version="native/v1"
+                    effect="deny", reasons=(f"egress-denied:{rule.id}",), policy_version="native/v2"
                 )
-            return PolicyDecision(effect=rule.effect, reasons=(f"rule:{rule.id}",), policy_version="native/v1")
+            return PolicyDecision(effect=rule.effect, reasons=(f"rule:{rule.id}",), policy_version="native/v2")
         return PolicyDecision(
             effect=self.default_effect,
             reasons=("default-policy",),
-            policy_version="native/v1",
+            policy_version="native/v2",
         )
